@@ -29,6 +29,7 @@ import java.util.List;
 import static com.facebook.presto.spi.StandardErrorCode.GENERIC_INSUFFICIENT_RESOURCES;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.type.TypeUtils.NULL_HASH_CODE;
+import static com.facebook.presto.util.HashCollisionsEstimator.estimateNumberOfHashCollisions;
 import static com.google.common.base.Preconditions.checkArgument;
 import static it.unimi.dsi.fastutil.HashCommon.arraySize;
 import static it.unimi.dsi.fastutil.HashCommon.murmurHash3;
@@ -58,6 +59,8 @@ public class BigintGroupByHash
     private final LongBigArray valuesByGroupId;
 
     private int nextGroupId;
+    private long hashCollisions;
+    private double expectedHashCollisions;
 
     public BigintGroupByHash(int hashChannel, boolean outputRawHash, int expectedSize)
     {
@@ -86,6 +89,18 @@ public class BigintGroupByHash
         return groupIds.sizeOf() +
                 values.sizeOf() +
                 valuesByGroupId.sizeOf();
+    }
+
+    @Override
+    public long getHashCollisions()
+    {
+        return hashCollisions;
+    }
+
+    @Override
+    public double getExpectedHashCollisions()
+    {
+        return expectedHashCollisions + estimateNumberOfHashCollisions(getGroupCount(), hashCapacity);
     }
 
     @Override
@@ -202,6 +217,7 @@ public class BigintGroupByHash
 
         long value = BIGINT.getLong(block, position);
         long hashPosition = getHashPosition(value, mask);
+        long hashCollisionsDelta = 0;
 
         // look for an empty slot or a slot containing this key
         while (true) {
@@ -211,13 +227,16 @@ public class BigintGroupByHash
             }
 
             if (value == values.get(hashPosition)) {
+                hashCollisions += hashCollisionsDelta;
                 return groupId;
             }
 
             // increment position and mask to handle wrap around
             hashPosition = (hashPosition + 1) & mask;
+            hashCollisionsDelta++;
         }
 
+        hashCollisions += hashCollisionsDelta;
         return addNewGroup(hashPosition, value);
     }
 
@@ -239,6 +258,8 @@ public class BigintGroupByHash
 
     private void rehash()
     {
+        expectedHashCollisions += estimateNumberOfHashCollisions(getGroupCount(), hashCapacity);
+
         long newCapacityLong = hashCapacity * 2L;
         if (newCapacityLong > Integer.MAX_VALUE) {
             throw new PrestoException(GENERIC_INSUFFICIENT_RESOURCES, "Size of hash table cannot exceed 1 billion entries");
@@ -250,6 +271,7 @@ public class BigintGroupByHash
         newValues.ensureCapacity(newCapacity);
         IntBigArray newGroupIds = new IntBigArray(-1);
         newGroupIds.ensureCapacity(newCapacity);
+        long hashCollisionsDelta = 0;
 
         for (int groupId = 0; groupId < nextGroupId; groupId++) {
             if (groupId == nullGroupId) {
@@ -261,6 +283,7 @@ public class BigintGroupByHash
             long hashPosition = getHashPosition(value, newMask);
             while (newGroupIds.get(hashPosition) != -1) {
                 hashPosition = (hashPosition + 1) & newMask;
+                hashCollisionsDelta++;
             }
 
             // record the mapping
@@ -273,6 +296,7 @@ public class BigintGroupByHash
         maxFill = calculateMaxFill(hashCapacity);
         values = newValues;
         groupIds = newGroupIds;
+        hashCollisions += hashCollisionsDelta;
 
         this.valuesByGroupId.ensureCapacity(maxFill);
     }
