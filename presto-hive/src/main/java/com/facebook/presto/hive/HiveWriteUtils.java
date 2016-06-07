@@ -108,6 +108,7 @@ import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.apache.hadoop.hive.metastore.TableType.MANAGED_TABLE;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory.javaBooleanObjectInspector;
@@ -312,6 +313,10 @@ public final class HiveWriteUtils
 
     public static void checkTableIsWritable(Table table)
     {
+        if (!table.getTableType().equals(MANAGED_TABLE.toString())) {
+            throw new PrestoException(NOT_SUPPORTED, "Writing to non-managed Hive tables is not supported");
+        }
+
         checkWritable(
                 new SchemaTableName(table.getDatabaseName(), table.getTableName()),
                 Optional.empty(),
