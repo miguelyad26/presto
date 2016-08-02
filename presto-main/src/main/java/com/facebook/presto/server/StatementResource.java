@@ -39,6 +39,7 @@ import com.facebook.presto.security.AccessControl;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ErrorCode;
 import com.facebook.presto.spi.Page;
+import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.QueryId;
 import com.facebook.presto.spi.block.Block;
 import com.facebook.presto.spi.type.StandardTypes;
@@ -98,6 +99,7 @@ import static com.facebook.presto.client.PrestoHeaders.PRESTO_CLEAR_TRANSACTION_
 import static com.facebook.presto.client.PrestoHeaders.PRESTO_DEALLOCATED_PREPARE;
 import static com.facebook.presto.client.PrestoHeaders.PRESTO_SET_SESSION;
 import static com.facebook.presto.client.PrestoHeaders.PRESTO_STARTED_TRANSACTION_ID;
+import static com.facebook.presto.client.QueryErrorFactory.createQueryError;
 import static com.facebook.presto.server.ResourceUtil.assertRequest;
 import static com.facebook.presto.server.ResourceUtil.createSessionForRequest;
 import static com.facebook.presto.server.ResourceUtil.urlEncode;
@@ -168,7 +170,14 @@ public class StatementResource
     {
         assertRequest(!isNullOrEmpty(statement), "SQL statement is empty");
 
-        Session session = createSessionForRequest(servletRequest, transactionManager, accessControl, sessionPropertyManager, queryIdGenerator.createNextQueryId());
+        Session session;
+
+        try {
+            session = createSessionForRequest(servletRequest, transactionManager, accessControl, sessionPropertyManager, queryIdGenerator.createNextQueryId());
+        }
+        catch (PrestoException e) {
+            return Response.serverError().entity(createQueryError(e)).build();
+        }
 
         ExchangeClient exchangeClient = exchangeClientSupplier.get(deltaMemoryInBytes -> { });
         Query query = new Query(session, statement, queryManager, exchangeClient);
