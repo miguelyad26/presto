@@ -122,6 +122,7 @@ import static com.facebook.presto.sql.analyzer.SemanticErrorCode.COLUMN_TYPE_UNK
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.DUPLICATE_COLUMN_NAME;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.DUPLICATE_RELATION;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.INVALID_ORDINAL;
+import static com.facebook.presto.sql.analyzer.SemanticErrorCode.INVALID_PROCEDURE_ARGUMENTS;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.INVALID_WINDOW_FRAME;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.MISMATCHED_COLUMN_ALIASES;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.MISMATCHED_SET_COLUMN_TYPES;
@@ -133,7 +134,6 @@ import static com.facebook.presto.sql.analyzer.SemanticErrorCode.MUST_BE_WINDOW_
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.NESTED_WINDOW;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.NON_NUMERIC_SAMPLE_PERCENTAGE;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.NOT_SUPPORTED;
-import static com.facebook.presto.sql.analyzer.SemanticErrorCode.NO_CORRESPONDING_GROUPING_SET_ROLLUP_CUBE_TO_GROUPING;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.ORDER_BY_MUST_BE_IN_SELECT;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.TABLE_ALREADY_EXISTS;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.TYPE_MISMATCH;
@@ -1151,7 +1151,7 @@ class StatementAnalyzer
 
         if (isGroupingOperationPresent && !node.getGroupBy().isPresent()) {
             throw new SemanticException(
-                    NO_CORRESPONDING_GROUPING_SET_ROLLUP_CUBE_TO_GROUPING,
+                    INVALID_PROCEDURE_ARGUMENTS,
                     node,
                     "A GROUPING() operation can only be used with a corresponding GROUPING SET/CUBE/ROLLUP/GROUP BY clause");
         }

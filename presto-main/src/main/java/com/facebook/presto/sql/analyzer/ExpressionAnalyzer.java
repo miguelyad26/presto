@@ -1019,8 +1019,8 @@ public class ExpressionAnalyzer
             for (Expression columnArgument : node.getGroupingColumns()) {
                 process(columnArgument, context);
             }
-            expressionTypes.put(node, BIGINT);
-            return BIGINT;
+            expressionTypes.put(node, INTEGER);
+            return INTEGER;
         }
 
         private Type getOperator(StackableAstVisitorContext<Void> context, Expression node, OperatorType operatorType, Expression... arguments)

@@ -78,6 +78,7 @@ import java.util.stream.Collectors;
 
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
+import static com.facebook.presto.spi.type.IntegerType.INTEGER;
 import static com.facebook.presto.spi.type.VarbinaryType.VARBINARY;
 import static com.facebook.presto.sql.analyzer.ExpressionAnalyzer.resolveFunction;
 import static com.facebook.presto.util.ImmutableCollectors.toImmutableSet;
@@ -317,7 +318,7 @@ class QueryPlanner
         );
         Signature functionSignature = resolveFunction(rewrittenExpression, functionTypes, metadata.getFunctionRegistry());
 
-        expressionTypes.put(rewrittenExpression, BIGINT);
+        expressionTypes.put(rewrittenExpression, INTEGER);
         functionSignatures.put(rewrittenExpression, functionSignature);
 
         analysis.addTypes(expressionTypes);
