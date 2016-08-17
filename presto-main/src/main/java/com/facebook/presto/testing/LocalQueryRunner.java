@@ -124,7 +124,7 @@ import com.facebook.presto.sql.tree.SetSession;
 import com.facebook.presto.sql.tree.StartTransaction;
 import com.facebook.presto.sql.tree.Statement;
 import com.facebook.presto.statistics.StatisticsCalculator;
-import com.facebook.presto.statistics.TrivialStatisticsCalculator;
+import com.facebook.presto.statistics.CoefficientBasedStatisticsCalculator;
 import com.facebook.presto.testing.PageConsumerOperator.PageConsumerOutputFactory;
 import com.facebook.presto.transaction.TransactionManager;
 import com.facebook.presto.transaction.TransactionManagerConfig;
@@ -246,7 +246,7 @@ public class LocalQueryRunner
                 new SessionPropertyManager(),
                 new TablePropertyManager(),
                 transactionManager);
-        this.statisticsCalculator = new TrivialStatisticsCalculator(metadata);
+        this.statisticsCalculator = new CoefficientBasedStatisticsCalculator(metadata);
         this.accessControl = new TestingAccessControlManager(transactionManager);
         this.eventListener = new TestingEventListenerManager();
         this.pageSourceManager = new PageSourceManager();
