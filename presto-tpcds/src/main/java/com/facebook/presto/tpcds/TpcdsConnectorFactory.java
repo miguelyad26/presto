@@ -24,6 +24,7 @@ import com.facebook.presto.spi.connector.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.connector.ConnectorSplitManager;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.facebook.presto.spi.transaction.IsolationLevel;
+<<<<<<< HEAD
 
 import java.util.Map;
 
@@ -31,6 +32,11 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkState;
 
 public class TpcdsConnectorFactory
         implements ConnectorFactory
