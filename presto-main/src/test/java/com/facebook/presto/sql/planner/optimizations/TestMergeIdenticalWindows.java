@@ -109,7 +109,7 @@ public class TestMergeIdenticalWindows
     {
         @Language("SQL") String sql = "select " +
                 "sum(quantity) over (partition by suppkey order by orderkey rows between unbounded preceding and current row) sum_quantity_A, " +
-                "sum(quantity) over (partition by orderkey order by shipdate rows between UNBOUNDED preceding and CURRENT ROW) sum_quantity_B, " +
+                "sum(quantity) over (partition by orderkey order by shipdate rows between unbounded preceding and current row) sum_quantity_B, " +
                 "sum(discount) over (partition by suppkey order by orderkey rows between unbounded preceding and current row) sum_discount_A " +
                 "from lineitem";
 
@@ -136,7 +136,7 @@ public class TestMergeIdenticalWindows
     {
         @Language("SQL") String sql = "select " +
                 "sum(quantity) over (partition by suppkey order by orderkey rows between unbounded preceding and current row) sum_quantity_A, " +
-                "sum(quantity) over (partition by orderkey order by shipdate rows between UNBOUNDED preceding and CURRENT ROW) sum_quantity_B, " +
+                "sum(quantity) over (partition by orderkey order by shipdate rows between unbounded preceding and current row) sum_quantity_B, " +
                 "sum(discount) over (partition by suppkey order by orderkey rows between unbounded preceding and current row) sum_discount_A " +
                 "from lineitem";
 
@@ -155,7 +155,7 @@ public class TestMergeIdenticalWindows
     {
         @Language("SQL") String sql = "select " +
                 "sum(quantity) over (partition by suppkey order by orderkey rows between unbounded preceding and current row) sum_quantity_A, " +
-                "lag(quantity, 1, 0.0) over (partition by orderkey order by shipdate rows between UNBOUNDED preceding and CURRENT ROW) sum_quantity_B, " +
+                "lag(quantity, 1, 0.0) over (partition by orderkey order by shipdate rows between unbounded preceding and current row) sum_quantity_B, " +
                 "sum(discount) over (partition by suppkey order by orderkey rows between unbounded preceding and current row) sum_discount_A " +
                 "from lineitem";
 
@@ -174,7 +174,7 @@ public class TestMergeIdenticalWindows
     {
         @Language("SQL") String sql = "select " +
                 "sum(quantity) over (partition by suppkey order by orderkey rows between unbounded preceding and current row) sum_quantity_A, " +
-                "lag(quantity, 1, 0.0) over (partition by suppkey order by orderkey rows between UNBOUNDED preceding and CURRENT ROW) sum_quantity_B, " +
+                "lag(quantity, 1, 0.0) over (partition by suppkey order by orderkey rows between unbounded preceding and current row) sum_quantity_B, " +
                 "sum(discount) over (partition by suppkey order by orderkey rows between unbounded preceding and current row) sum_discount_A " +
                 "from lineitem";
 
@@ -195,13 +195,13 @@ public class TestMergeIdenticalWindows
         @Language("SQL") String sql = "with foo as (" +
                 "select " +
                 "suppkey, orderkey, partkey, " +
-                "sum(discount) over (partition by orderkey order by shipdate rows between UNBOUNDED preceding and CURRENT ROW) a " +
+                "sum(discount) over (partition by orderkey order by shipdate rows between unbounded preceding and current row) a " +
                 "from lineitem where (partkey = 272 or partkey = 273) and suppkey > 50 " +
                 "), " +
                 "bar as ( " +
                 "select " +
                 "suppkey, orderkey, partkey, " +
-                "avg(quantity) over (partition by orderkey order by shipdate rows between UNBOUNDED preceding and CURRENT ROW) b " +
+                "avg(quantity) over (partition by orderkey order by shipdate rows between unbounded preceding and current row) b " +
                 "from lineitem where (partkey = 272 or partkey = 273) and suppkey > 50 " +
                 ")" +
                 "select * from foo, bar where foo.a = bar.b";
