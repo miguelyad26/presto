@@ -48,7 +48,8 @@ public class TestFeaturesConfig
                 .setLegacyArrayAgg(false)
                 .setRegexLibrary(JONI)
                 .setRe2JDfaStatesLimit(Integer.MAX_VALUE)
-                .setRe2JDfaRetries(5));
+                .setRe2JDfaRetries(5)
+                .setReorderWindows(true));
     }
 
     @Test
@@ -68,6 +69,7 @@ public class TestFeaturesConfig
                 .put("optimizer.push-table-write-through-union", "false")
                 .put("optimizer.processing-optimization", "columnar_dictionary")
                 .put("optimizer.dictionary-aggregation", "true")
+                .put("optimizer.reorder-windows", "false")
                 .put("regex-library", "RE2J")
                 .put("re2j.dfa-states-limit", "42")
                 .put("re2j.dfa-retries", "42")
@@ -86,6 +88,7 @@ public class TestFeaturesConfig
                 .put("optimizer.push-table-write-through-union", "false")
                 .put("optimizer.processing-optimization", "columnar_dictionary")
                 .put("optimizer.dictionary-aggregation", "true")
+                .put("optimizer.reorder-windows", "false")
                 .put("regex-library", "RE2J")
                 .put("re2j.dfa-states-limit", "42")
                 .put("re2j.dfa-retries", "42")
@@ -107,7 +110,8 @@ public class TestFeaturesConfig
                 .setLegacyArrayAgg(true)
                 .setRegexLibrary(RE2J)
                 .setRe2JDfaStatesLimit(42)
-                .setRe2JDfaRetries(42);
+                .setRe2JDfaRetries(42)
+                .setReorderWindows(false);
 
         assertFullMapping(properties, expected);
         assertDeprecatedEquivalence(FeaturesConfig.class, properties, propertiesLegacy);
