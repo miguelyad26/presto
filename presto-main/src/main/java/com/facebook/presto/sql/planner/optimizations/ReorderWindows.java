@@ -144,9 +144,14 @@ public class ReorderWindows
         @Override
         public int compare(WindowNode o1, WindowNode o2)
         {
-            String firstPartitionBy = o1.getPartitionBy().stream().map(Symbol::getName).collect(Collectors.joining(","));
-            String secondPartitionBy = o2.getPartitionBy().stream().map(Symbol::getName).collect(Collectors.joining(","));
-            return firstPartitionBy.compareTo(secondPartitionBy);
+            return stringifyPartitionBy(o1).compareTo(stringifyPartitionBy(o2));
+        }
+
+        private static String stringifyPartitionBy(WindowNode node)
+        {
+            return node.getPartitionBy().stream()
+                .map(Symbol::getName)
+                .collect(Collectors.joining(","));
         }
     }
 }
