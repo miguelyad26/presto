@@ -238,6 +238,12 @@ public interface ConnectorMetadata
     }
 
     /**
+     * Notification of starting SELECT/UPDATE/INSERT/DELETE query
+     */
+    default void beginQuery(ConnectorSession session)
+    {}
+
+    /**
      * Begin insert query
      */
     default ConnectorInsertTableHandle beginInsert(ConnectorSession session, ConnectorTableHandle tableHandle)
