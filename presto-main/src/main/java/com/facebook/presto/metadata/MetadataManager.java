@@ -72,6 +72,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
@@ -525,6 +526,27 @@ public class MetadataManager
         ConnectorSession connectorSession = session.toConnectorSession(entry.getCatalog());
         return metadata.getNewTableLayout(connectorSession, tableMetadata.getMetadata())
                 .map(layout -> new NewTableLayout(entry.getConnectorId(), transactionHandle, layout));
+    }
+
+    @Override
+    public void beginQuery(Session session, Collection<TableHandle> tableHandles)
+    {
+        Collection<TableHandle> distinctHandles = filterDuplicateCatalogs(tableHandles); // don't trigger ConnectorMetadata.beginQuery more than once when >1 tables of the same catalog are involved in the query
+
+        for (TableHandle handle : distinctHandles) {
+            ConnectorEntry entry = connectorsById.get(handle.getConnectorId());
+            ConnectorSession connectorSession = session.toConnectorSession(entry.getCatalog());
+            ConnectorMetadata metadata = entry.getMetadata(session);
+            metadata.beginQuery(connectorSession);
+        }
+    }
+
+    private static Collection<TableHandle> filterDuplicateCatalogs(Collection<TableHandle> tableHandles)
+    {
+        Set<TableHandle> handlesOfUniqueConnectors = new TreeSet<>((l, r) -> l.getConnectorId().compareTo(r.getConnectorId()));
+        handlesOfUniqueConnectors.addAll(tableHandles);
+
+        return ImmutableList.copyOf(handlesOfUniqueConnectors);
     }
 
     @Override
