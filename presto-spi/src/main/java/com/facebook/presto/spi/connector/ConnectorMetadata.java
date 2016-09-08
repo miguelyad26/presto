@@ -238,7 +238,7 @@ public interface ConnectorMetadata
     }
 
     /**
-     * Notification of starting SELECT/UPDATE/INSERT/DELETE query
+     * Notification of starting a query
      */
     default void beginQuery(ConnectorSession session)
     {}

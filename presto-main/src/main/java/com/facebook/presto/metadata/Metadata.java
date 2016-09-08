@@ -161,9 +161,14 @@ public interface Metadata
     Optional<NewTableLayout> getInsertLayout(Session session, TableHandle target);
 
     /**
-     * Begin the execution of a SELECT/UPDATE/INSERT/DELETE query
+     * Begin the execution of a query
      */
     void beginQuery(Session session, Collection<TableHandle> tableHandles);
+
+    /**
+     * Notify catalogName of the execution of a query
+     */
+    void beginQuery(Session session, String catalogName);
 
     /**
      * Begin insert query
