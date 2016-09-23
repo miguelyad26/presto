@@ -38,7 +38,6 @@ import io.airlift.log.Logger;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
@@ -318,9 +317,6 @@ public class SemiTransactionalHiveMetastore
         SchemaTableName schemaTableName = new SchemaTableName(databaseName, tableName);
         if (!table.isPresent()) {
             throw new TableNotFoundException(schemaTableName);
-        }
-        if (!table.get().getTableType().equals(TableType.MANAGED_TABLE.toString())) {
-            throw new PrestoException(NOT_SUPPORTED, "Cannot delete from non-managed Hive table");
         }
         if (!table.get().getPartitionColumns().isEmpty()) {
             throw new IllegalArgumentException("Table is partitioned");

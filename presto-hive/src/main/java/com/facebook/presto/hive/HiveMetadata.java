@@ -128,6 +128,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.COMPRESSRESULT;
+import static org.apache.hadoop.hive.metastore.TableType.MANAGED_TABLE;
 
 public class HiveMetadata
         implements ConnectorMetadata
@@ -946,6 +947,10 @@ public class HiveMetadata
         Optional<Table> table = metastore.getTable(handle.getSchemaName(), handle.getTableName());
         if (!table.isPresent()) {
             throw new TableNotFoundException(handle.getSchemaTableName());
+        }
+
+        if (!table.get().getTableType().equals(MANAGED_TABLE.toString())) {
+            throw new PrestoException(NOT_SUPPORTED, "Deleting from non-managed Hive tables is not supported");
         }
 
         if (table.get().getPartitionColumns().isEmpty()) {
