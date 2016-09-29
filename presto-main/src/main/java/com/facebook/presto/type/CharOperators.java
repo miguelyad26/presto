@@ -33,6 +33,7 @@ import static com.facebook.presto.metadata.OperatorType.HASH_CODE;
 import static com.facebook.presto.metadata.OperatorType.LESS_THAN;
 import static com.facebook.presto.metadata.OperatorType.LESS_THAN_OR_EQUAL;
 import static com.facebook.presto.metadata.OperatorType.NOT_EQUAL;
+import static com.facebook.presto.spi.type.Chars.compareChars;
 import static com.facebook.presto.spi.type.StandardTypes.BOOLEAN;
 import static com.facebook.presto.spi.type.TypeSignature.parseTypeSignature;
 
@@ -105,31 +106,31 @@ public final class CharOperators
     @UsedByGeneratedCode
     public static boolean lessThanPadSpaces(Slice left, Slice right, long leftTypeLength, long rightTypeLength)
     {
-        return left.compareTo(right) < 0;
+        return compareChars(left, right) < 0;
     }
 
     @UsedByGeneratedCode
     public static boolean lessThanOrEqualPadSpaces(Slice left, Slice right, long leftTypeLength, long rightTypeLength)
     {
-        return left.compareTo(right) <= 0;
+        return compareChars(left, right) <= 0;
     }
 
     @UsedByGeneratedCode
     public static boolean greaterThanPadSpaces(Slice left, Slice right, long leftTypeLength, long rightTypeLength)
     {
-        return left.compareTo(right) > 0;
+        return compareChars(left, right) > 0;
     }
 
     @UsedByGeneratedCode
     public static boolean greaterThanOrEqualPadSpaces(Slice left, Slice right, long leftTypeLength, long rightTypeLength)
     {
-        return left.compareTo(right) >= 0;
+        return compareChars(left, right) >= 0;
     }
 
     @UsedByGeneratedCode
     public static boolean betweenPadSpaces(Slice value, Slice min, Slice max, long valueTypeLength, long minTypeLength, long maxTypeLength)
     {
-        return min.compareTo(value) <= 0 && value.compareTo(max) <= 0;
+        return compareChars(min, value) <= 0 && compareChars(value, max) <= 0;
     }
 
     @LiteralParameters("x")
