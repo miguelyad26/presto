@@ -18,7 +18,7 @@ import org.testng.annotations.Test;
 
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
 
-public class TestCharOperatorsNoPad
+public class TestCharOperators
         extends AbstractTestFunctions
 {
     @Test
@@ -27,7 +27,7 @@ public class TestCharOperatorsNoPad
     {
         assertFunction("cast('foo' as char(3)) = cast('foo' as char(3))", BOOLEAN, true);
         assertFunction("cast('foo  ' as char(5)) = cast('foo' as char(5))", BOOLEAN, true);
-        assertFunction("cast('foo' as char(5)) = cast('foo' as char(3))", BOOLEAN, false);
+        assertFunction("cast('foo' as char(5)) = cast('foo' as char(3))", BOOLEAN, true);
         assertFunction("cast('foo' as char(3)) = cast('bar' as char(3))", BOOLEAN, false);
         assertFunction("cast('bar' as char(3)) = cast('foo' as char(3))", BOOLEAN, false);
     }
@@ -38,7 +38,7 @@ public class TestCharOperatorsNoPad
     {
         assertFunction("cast('foo' as char(3)) <> cast('foo' as char(3))", BOOLEAN, false);
         assertFunction("cast('foo  ' as char(5)) <> cast('foo' as char(5))", BOOLEAN, false);
-        assertFunction("cast('foo' as char(5)) <> cast('foo' as char(3))", BOOLEAN, true);
+        assertFunction("cast('foo' as char(5)) <> cast('foo' as char(3))", BOOLEAN, false);
         assertFunction("cast('foo' as char(3)) <> cast('bar' as char(3))", BOOLEAN, true);
         assertFunction("cast('bar' as char(3)) <> cast('foo' as char(3))", BOOLEAN, true);
     }
@@ -48,7 +48,7 @@ public class TestCharOperatorsNoPad
             throws Exception
     {
         assertFunction("cast('foo' as char(3)) < cast('foo' as char(3))", BOOLEAN, false);
-        assertFunction("cast('foo' as char(3)) < cast('foo' as char(5))", BOOLEAN, true);
+        assertFunction("cast('foo' as char(3)) < cast('foo' as char(5))", BOOLEAN, false);
         assertFunction("cast('foo' as char(5)) < cast('foo' as char(3))", BOOLEAN, false);
         assertFunction("cast('foo' as char(3)) < cast('bar' as char(3))", BOOLEAN, false);
         assertFunction("cast('bar' as char(3)) < cast('foo' as char(3))", BOOLEAN, true);
@@ -60,7 +60,7 @@ public class TestCharOperatorsNoPad
     {
         assertFunction("cast('foo' as char(3)) <= cast('foo' as char(3))", BOOLEAN, true);
         assertFunction("cast('foo' as char(3)) <= cast('foo' as char(5))", BOOLEAN, true);
-        assertFunction("cast('foo' as char(5)) <= cast('foo' as char(3))", BOOLEAN, false);
+        assertFunction("cast('foo' as char(5)) <= cast('foo' as char(3))", BOOLEAN, true);
         assertFunction("cast('foo' as char(3)) <= cast('bar' as char(3))", BOOLEAN, false);
         assertFunction("cast('bar' as char(3)) <= cast('foo' as char(3))", BOOLEAN, true);
     }
@@ -71,7 +71,7 @@ public class TestCharOperatorsNoPad
     {
         assertFunction("cast('foo' as char(3)) > cast('foo' as char(3))", BOOLEAN, false);
         assertFunction("cast('foo' as char(3)) > cast('foo' as char(5))", BOOLEAN, false);
-        assertFunction("cast('foo' as char(5)) > cast('foo' as char(3))", BOOLEAN, true);
+        assertFunction("cast('foo' as char(5)) > cast('foo' as char(3))", BOOLEAN, false);
         assertFunction("cast('foo' as char(3)) > cast('bar' as char(3))", BOOLEAN, true);
         assertFunction("cast('bar' as char(3)) > cast('foo' as char(3))", BOOLEAN, false);
     }
@@ -81,7 +81,7 @@ public class TestCharOperatorsNoPad
             throws Exception
     {
         assertFunction("cast('foo' as char(3)) >= cast('foo' as char(3))", BOOLEAN, true);
-        assertFunction("cast('foo' as char(3)) >= cast('foo' as char(5))", BOOLEAN, false);
+        assertFunction("cast('foo' as char(3)) >= cast('foo' as char(5))", BOOLEAN, true);
         assertFunction("cast('foo' as char(5)) >= cast('foo' as char(3))", BOOLEAN, true);
         assertFunction("cast('foo' as char(3)) >= cast('bar' as char(3))", BOOLEAN, true);
         assertFunction("cast('bar' as char(3)) >= cast('foo' as char(3))", BOOLEAN, false);
@@ -105,6 +105,6 @@ public class TestCharOperatorsNoPad
         assertFunction("cast('bar' as char(3)) BETWEEN cast('bar' as char(3)) AND cast('bar' as char(3))", BOOLEAN, true);
 
         assertFunction("cast('bar' as char(4)) BETWEEN cast('bar' as char(3)) AND cast('bar' as char(5))", BOOLEAN, true);
-        assertFunction("cast('bar' as char(4)) BETWEEN cast('bar' as char(5)) AND cast('bar' as char(7))", BOOLEAN, false);
+        assertFunction("cast('bar' as char(4)) BETWEEN cast('bar' as char(5)) AND cast('bar' as char(7))", BOOLEAN, true);
     }
 }
