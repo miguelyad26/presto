@@ -18,6 +18,8 @@ import com.facebook.presto.spi.PageBuilder;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.sql.analyzer.FeaturesConfig;
 import com.facebook.presto.sql.planner.plan.PlanNodeId;
+import com.facebook.presto.sql.tree.BooleanLiteral;
+import com.facebook.presto.sql.tree.Expression;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -40,12 +42,20 @@ public class FilterAndProjectOperator
     private int currentPosition;
     private boolean finishing;
 
-    public FilterAndProjectOperator(OperatorContext operatorContext, Iterable<? extends Type> types, PageProcessor processor)
+    public FilterAndProjectOperator(OperatorContext operatorContext, Iterable<? extends Type> types, PageProcessor processor, boolean hasFilter)
     {
         this.processor = requireNonNull(processor, "processor is null");
         this.operatorContext = requireNonNull(operatorContext, "operatorContext is null");
         this.types = ImmutableList.copyOf(requireNonNull(types, "types is null"));
-        this.processingOptimization = getProcessingOptimization(operatorContext.getSession());
+
+        String processingOptimization = getProcessingOptimization(operatorContext.getSession());
+        if (!hasFilter && processingOptimization.equals(FeaturesConfig.ProcessingOptimization.DISABLED)) {
+            this.processingOptimization = FeaturesConfig.ProcessingOptimization.COLUMNAR;
+        }
+        else {
+            this.processingOptimization = processingOptimization;
+        }
+
         this.pageBuilder = new PageBuilder(getTypes());
     }
 
@@ -136,14 +146,26 @@ public class FilterAndProjectOperator
         private final PlanNodeId planNodeId;
         private final Supplier<PageProcessor> processor;
         private final List<Type> types;
+        private final boolean hasFilter;
         private boolean closed;
 
         public FilterAndProjectOperatorFactory(int operatorId, PlanNodeId planNodeId, Supplier<PageProcessor> processor, List<Type> types)
+        {
+            this(operatorId, planNodeId, processor, types, true);
+        }
+
+        public FilterAndProjectOperatorFactory(int operatorId, PlanNodeId planNodeId, Supplier<PageProcessor> processor, List<Type> types, Expression filter)
+        {
+            this(operatorId, planNodeId, processor, types, !filter.equals(BooleanLiteral.TRUE_LITERAL));
+        }
+
+        private FilterAndProjectOperatorFactory(int operatorId, PlanNodeId planNodeId, Supplier<PageProcessor> processor, List<Type> types, boolean hashFilter)
         {
             this.operatorId = operatorId;
             this.planNodeId = requireNonNull(planNodeId, "planNodeId is null");
             this.processor = processor;
             this.types = types;
+            this.hasFilter = hashFilter;
         }
 
         @Override
@@ -157,7 +179,7 @@ public class FilterAndProjectOperator
         {
             checkState(!closed, "Factory is already closed");
             OperatorContext operatorContext = driverContext.addOperatorContext(operatorId, planNodeId, FilterAndProjectOperator.class.getSimpleName());
-            return new FilterAndProjectOperator(operatorContext, types, processor.get());
+            return new FilterAndProjectOperator(operatorContext, types, processor.get(), hasFilter);
         }
 
         @Override
@@ -169,7 +191,7 @@ public class FilterAndProjectOperator
         @Override
         public OperatorFactory duplicate()
         {
-            return new FilterAndProjectOperatorFactory(operatorId, planNodeId, processor, types);
+            return new FilterAndProjectOperatorFactory(operatorId, planNodeId, processor, types, hasFilter);
         }
     }
 }
