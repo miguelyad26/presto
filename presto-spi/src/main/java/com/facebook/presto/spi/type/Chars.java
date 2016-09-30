@@ -116,14 +116,14 @@ public final class Chars
     public static int compareChars(Slice left, Slice right)
     {
         if (left.length() < right.length()) {
-            return comapreCharsShorterToLonger(left, right);
+            return compareCharsShorterToLonger(left, right);
         }
         else {
-            return -comapreCharsShorterToLonger(right, left);
+            return -compareCharsShorterToLonger(right, left);
         }
     }
 
-    private static int comapreCharsShorterToLonger(Slice shorter, Slice longer)
+    private static int compareCharsShorterToLonger(Slice shorter, Slice longer)
     {
         for (int i = 0; i < shorter.length(); ++i) {
             int result = compareUnsignedBytes(shorter.getByte(i), longer.getByte(i));
