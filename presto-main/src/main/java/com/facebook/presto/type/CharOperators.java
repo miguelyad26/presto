@@ -35,6 +35,7 @@ import static com.facebook.presto.metadata.OperatorType.LESS_THAN;
 import static com.facebook.presto.metadata.OperatorType.LESS_THAN_OR_EQUAL;
 import static com.facebook.presto.metadata.OperatorType.NOT_EQUAL;
 import static com.facebook.presto.spi.type.Chars.compareChars;
+import static com.facebook.presto.spi.type.Chars.compareCharsNoPad;
 import static com.facebook.presto.spi.type.StandardTypes.BOOLEAN;
 import static com.facebook.presto.spi.type.TypeSignature.parseTypeSignature;
 
@@ -145,7 +146,7 @@ public final class CharOperators
 
     private static int compareNoPad(Slice left, Slice right, long leftTypeLength, long rightTypeLength)
     {
-        int compareResult = Chars.compareChars(left, right);
+        int compareResult = compareCharsNoPad(left, right, (int) leftTypeLength, (int) rightTypeLength);
         if (compareResult != 0) {
             return compareResult;
         }

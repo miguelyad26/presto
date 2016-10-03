@@ -65,6 +65,8 @@ public class TestCharOperatorsNoPad
         assertFunction("cast('\0' as char(1)) < cast('\0 ' as char(2))", BOOLEAN, true); // length mismatch, coercion to VARCHAR applies
         assertFunction("cast('\0' as char(2)) < cast('\0 ' as char(2))", BOOLEAN, false); // '\0' is implicitly padded with spaces -> both are equal
         assertFunction("cast('\0 a' as char(3)) < cast('\0' as char(3))", BOOLEAN, false);
+        assertFunction("cast('a\0' as char(2)) < cast('a \0' as char(3))", BOOLEAN, true);
+        assertFunction("cast('a ' as char(2)) < cast('a \0' as char(3))", BOOLEAN, true);
     }
 
     @Test
@@ -83,6 +85,8 @@ public class TestCharOperatorsNoPad
         assertFunction("cast('\0' as char(1)) <= cast('\0 ' as char(2))", BOOLEAN, true); // length mismatch, coercion to VARCHAR applies
         assertFunction("cast('\0' as char(2)) <= cast('\0 ' as char(2))", BOOLEAN, true); // '\0' is implicitly padded with spaces -> both are equal
         assertFunction("cast('\0 a' as char(3)) <= cast('\0' as char(3))", BOOLEAN, false);
+        assertFunction("cast('a\0' as char(2)) <= cast('a \0' as char(3))", BOOLEAN, true);
+        assertFunction("cast('a ' as char(2)) <= cast('a \0' as char(3))", BOOLEAN, true);
     }
 
     @Test
@@ -101,6 +105,8 @@ public class TestCharOperatorsNoPad
         assertFunction("cast('\0 ' as char(2)) > cast('\0' as char(1))", BOOLEAN, true); // length mismatch, coercion to VARCHAR applies
         assertFunction("cast('\0 ' as char(2)) > cast('\0' as char(2))", BOOLEAN, false); // '\0' is implicitly padded with spaces -> both are equal
         assertFunction("cast('\0 a' as char(3)) > cast('\0' as char(3))", BOOLEAN, true);
+        assertFunction("cast('a\0' as char(2)) > cast('a \0' as char(3))", BOOLEAN, false);
+        assertFunction("cast('a ' as char(2)) > cast('a \0' as char(3))", BOOLEAN, false);
     }
 
     @Test
@@ -119,6 +125,8 @@ public class TestCharOperatorsNoPad
         assertFunction("cast('\0 ' as char(2)) >= cast('\0' as char(1))", BOOLEAN, true); // length mismatch, coercion to VARCHAR applies
         assertFunction("cast('\0 ' as char(2)) >= cast('\0' as char(2))", BOOLEAN, true); // '\0' is implicitly padded with spaces -> both are equal
         assertFunction("cast('\0 a' as char(3)) >= cast('\0' as char(3))", BOOLEAN, true);
+        assertFunction("cast('a\0' as char(2)) >= cast('a \0' as char(3))", BOOLEAN, false);
+        assertFunction("cast('a ' as char(2)) >= cast('a \0' as char(3))", BOOLEAN, false);
     }
 
     @Test

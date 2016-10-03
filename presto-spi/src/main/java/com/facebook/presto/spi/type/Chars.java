@@ -77,6 +77,16 @@ public final class Chars
         }
     }
 
+    public static int compareCharsNoPad(Slice left, Slice right, int leftLength, int rightLength)
+    {
+        if (leftLength < rightLength) {
+            return compareCharsShorterToLongerNoPad(left, right, leftLength, rightLength);
+        }
+        else {
+            return -compareCharsShorterToLongerNoPad(right, left, rightLength, leftLength);
+        }
+    }
+
     private static int compareCharsShorterToLonger(Slice shorter, Slice longer)
     {
         for (int i = 0; i < shorter.length(); ++i) {
@@ -93,6 +103,36 @@ public final class Chars
             }
         }
         return 0;
+    }
+
+    private static int compareCharsShorterToLongerNoPad(Slice shorter, Slice longer, int shorterLength, int longerLength)
+    {
+        for (int i = 0; i < shorterLength; ++i) {
+            int result;
+            if (i >= shorter.length()) {
+                if (i >= longer.length()) {
+                    return 0;
+                }
+                result = compareUnsignedBytes((byte) ' ', longer.getByte(i));
+            }
+            else {
+                if (i >= longer.length()) {
+                    if (i >= shorter.length()) {
+                        return 0;
+                    }
+                    result = compareUnsignedBytes(shorter.getByte(i), (byte) ' ');
+                }
+                else {
+                    result = compareUnsignedBytes(shorter.getByte(i), longer.getByte(i));
+                }
+            }
+
+            if (result != 0) {
+                return result;
+            }
+        }
+
+        return shorterLength - longerLength;
     }
 
     private static int compareUnsignedBytes(byte thisByte, byte thatByte)
