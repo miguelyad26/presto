@@ -77,6 +77,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -261,18 +262,39 @@ public class UnaliasSymbolReferences
                     .collect(toImmutableList());
 
             List<List<Symbol>> inputs = new ArrayList<>();
+            List<Map<Symbol, Symbol>> inputToOutputs = new LinkedList<>();
             for (int i = 0; i < node.getInputs().size(); i++) {
                 inputs.add(new ArrayList<>());
+                inputToOutputs.add(new HashMap<>());
             }
             Set<Symbol> addedOutputs = new HashSet<>();
             ImmutableList.Builder<Symbol> outputs = ImmutableList.builder();
             for (int symbolIndex = 0; symbolIndex < node.getOutputSymbols().size(); symbolIndex++) {
                 Symbol canonicalOutput = canonicalize(node.getOutputSymbols().get(symbolIndex));
-                if (addedOutputs.add(canonicalOutput)) {
+
+                List<Symbol> outputAliases = new ArrayList<>();
+                for (int i = 0; i < node.getInputs().size(); i++) {
+                    List<Symbol> input = node.getInputs().get(i);
+                    Symbol canonicalInput = canonicalize(input.get(symbolIndex));
+                    if (inputToOutputs.get(i).containsKey(canonicalInput)) {
+                        outputAliases.add(inputToOutputs.get(i).get(canonicalInput));
+                    }
+                }
+
+                if (!addedOutputs.contains(canonicalOutput)) {
+                    if (outputAliases.size() == node.getInputs().size() && !outputAliases.isEmpty()
+                            && outputAliases.stream().allMatch(symbol -> symbol.equals(outputAliases.get(0)))) {
+                        map(canonicalOutput, outputAliases.get(0));
+                        continue;
+                    }
+
+                    addedOutputs.add(canonicalOutput);
                     outputs.add(canonicalOutput);
                     for (int i = 0; i < node.getInputs().size(); i++) {
                         List<Symbol> input = node.getInputs().get(i);
-                        inputs.get(i).add(canonicalize(input.get(symbolIndex)));
+                        Symbol canonicalInput = canonicalize(input.get(symbolIndex));
+                        inputs.get(i).add(canonicalInput);
+                        inputToOutputs.get(i).put(canonicalInput, canonicalOutput);
                     }
                 }
             }
