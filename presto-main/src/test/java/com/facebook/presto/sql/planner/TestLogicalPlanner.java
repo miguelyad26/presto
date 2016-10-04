@@ -19,6 +19,7 @@ import com.facebook.presto.sql.planner.assertions.PlanMatchPattern;
 import com.facebook.presto.sql.planner.plan.AggregationNode;
 import com.facebook.presto.sql.planner.plan.ApplyNode;
 import com.facebook.presto.sql.planner.plan.EnforceSingleRowNode;
+import com.facebook.presto.sql.planner.plan.ExchangeNode;
 import com.facebook.presto.sql.planner.plan.IndexJoinNode;
 import com.facebook.presto.sql.planner.plan.JoinNode;
 import com.facebook.presto.sql.planner.plan.PlanNode;
@@ -235,6 +236,37 @@ public class TestLogicalPlanner
                                                                 anyTree(
                                                                         node(ValuesNode.class)
                                                                 ))))))));
+    }
+
+    @Test
+    public void testUnaliasesJoinRemoteExchangeSymbols()
+    {
+        assertDistributedPlan("SELECT c.custkey FROM customer c, orders o WHERE c.custkey = o.custkey AND o.orderdate >= DATE '1994-01-01'", anyTree(
+                node(JoinNode.class,
+                        node(ExchangeNode.class, anyTree())
+                                .withNumberOfSymbols(2)
+                                .withSymbol("custkey", "C1")
+                                .withSymbol("hash", "H1"),
+                        node(ExchangeNode.class, anyTree())
+                                .withNumberOfSymbols(2)
+                                .withSymbol("custkey", "C2")
+                                .withSymbol("hash", "H2"))));
+    }
+
+    @Test
+    public void testUnaliasesUnionRemoteExchangeSymbols()
+    {
+        assertDistributedPlan("(SELECT custkey, custkey FROM orders) UNION ALL (SELECT custkey, custkey FROM orders)", anyTree(
+                node(ExchangeNode.class, anyTree(), anyTree())
+                        .withNumberOfSymbols(1)));
+    }
+
+    @Test
+    public void testDoesNotUnaliasUnionRemoteExchangeSymbols()
+    {
+        assertDistributedPlan("(SELECT custkey, custkey FROM orders) UNION ALL (SELECT custkey, orderkey FROM orders)", anyTree(
+                node(ExchangeNode.class, anyTree(), anyTree())
+                        .withNumberOfSymbols(2)));
     }
 
     private void assertPlan(String sql, PlanMatchPattern pattern)
