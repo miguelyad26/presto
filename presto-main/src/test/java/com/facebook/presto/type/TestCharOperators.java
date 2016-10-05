@@ -45,6 +45,10 @@ public class TestCharOperators
 
         assertFunction("cast('a' as char(2)) <> cast('a ' as char(2))", BOOLEAN, false);
         assertFunction("cast('a ' as char(2)) <> cast('a' as char(2))", BOOLEAN, false);
+
+        assertFunction("cast('a' as char(3)) <> cast('a' as char(2))", BOOLEAN, true);
+        assertFunction("cast('' as char(3)) <> cast('' as char(2))", BOOLEAN, true);
+        assertFunction("cast('' as char(2)) <> cast('' as char(2))", BOOLEAN, false);
     }
 
     @Test
