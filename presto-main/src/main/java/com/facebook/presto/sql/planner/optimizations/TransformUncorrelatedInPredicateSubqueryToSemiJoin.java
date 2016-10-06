@@ -261,6 +261,7 @@ public class TransformUncorrelatedInPredicateSubqueryToSemiJoin
                         valueList,
                         semiJoinSymbol.get(),
                         Optional.empty(),
+                        Optional.empty(),
                         Optional.empty()
                 );
             }
