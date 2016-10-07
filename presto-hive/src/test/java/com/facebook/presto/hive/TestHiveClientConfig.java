@@ -105,6 +105,7 @@ public class TestHiveClientConfig
                 .setSkipDeletionForAlter(false)
                 .setBucketExecutionEnabled(true)
                 .setBucketWritingEnabled(true)
+                .setMultiFileBucketingEnabled(false)
                 .setEmptyBucketedPartitionsEnabled(false));
     }
 
