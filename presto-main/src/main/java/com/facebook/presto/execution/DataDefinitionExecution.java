@@ -16,6 +16,7 @@ package com.facebook.presto.execution;
 import com.facebook.presto.Session;
 import com.facebook.presto.execution.StateMachine.StateChangeListener;
 import com.facebook.presto.memory.VersionedMemoryPoolId;
+import com.facebook.presto.metadata.GlobalProperties;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.MetadataManager;
 import com.facebook.presto.security.AccessControl;
@@ -237,7 +238,8 @@ public class DataDefinitionExecution<T extends Statement>
                 String query,
                 Session session,
                 Statement statement,
-                List<Expression> parameters)
+                List<Expression> parameters,
+                GlobalProperties globalProperties)
         {
             URI self = locationFactory.createQueryLocation(queryId);
 

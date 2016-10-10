@@ -49,6 +49,7 @@ import com.facebook.presto.execution.scheduler.LegacyNetworkTopology;
 import com.facebook.presto.execution.scheduler.NodeScheduler;
 import com.facebook.presto.execution.scheduler.NodeSchedulerConfig;
 import com.facebook.presto.index.IndexManager;
+import com.facebook.presto.metadata.GlobalProperties;
 import com.facebook.presto.metadata.HandleResolver;
 import com.facebook.presto.metadata.InMemoryNodeManager;
 import com.facebook.presto.metadata.Metadata;
@@ -654,16 +655,18 @@ public class LocalQueryRunner
 
         PlanNodeIdAllocator idAllocator = new PlanNodeIdAllocator();
 
+        GlobalProperties globalProperties = new GlobalProperties();
         QueryExplainer queryExplainer = new QueryExplainer(
                 optimizers,
                 metadata,
                 accessControl,
                 sqlParser,
                 dataDefinitionTask,
-                featuresConfig.isExperimentalSyntaxEnabled());
+                featuresConfig.isExperimentalSyntaxEnabled(),
+                globalProperties);
         Analyzer analyzer = new Analyzer(session, metadata, sqlParser, accessControl, Optional.of(queryExplainer), featuresConfig.isExperimentalSyntaxEnabled(), parameters);
 
-        LogicalPlanner logicalPlanner = new LogicalPlanner(session, optimizers, idAllocator, metadata, sqlParser);
+        LogicalPlanner logicalPlanner = new LogicalPlanner(session, optimizers, idAllocator, metadata, sqlParser, globalProperties);
 
         Analysis analysis = analyzer.analyze(statement);
         return logicalPlanner.plan(analysis, stage);

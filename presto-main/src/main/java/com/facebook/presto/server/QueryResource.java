@@ -18,6 +18,7 @@ import com.facebook.presto.execution.QueryIdGenerator;
 import com.facebook.presto.execution.QueryInfo;
 import com.facebook.presto.execution.QueryManager;
 import com.facebook.presto.execution.StageId;
+import com.facebook.presto.metadata.GlobalProperties;
 import com.facebook.presto.metadata.SessionPropertyManager;
 import com.facebook.presto.security.AccessControl;
 import com.facebook.presto.spi.QueryId;
@@ -56,15 +57,17 @@ public class QueryResource
     private final QueryManager queryManager;
     private final AccessControl accessControl;
     private final SessionPropertyManager sessionPropertyManager;
+    private final GlobalProperties globalProperties;
     private final QueryIdGenerator queryIdGenerator;
 
     @Inject
-    public QueryResource(QueryManager queryManager, AccessControl accessControl, SessionPropertyManager sessionPropertyManager, QueryIdGenerator queryIdGenerator)
+    public QueryResource(QueryManager queryManager, AccessControl accessControl, SessionPropertyManager sessionPropertyManager, QueryIdGenerator queryIdGenerator, GlobalProperties globalProperties)
     {
         this.queryManager = requireNonNull(queryManager, "queryManager is null");
         this.accessControl = requireNonNull(accessControl, "accessControl is null");
         this.sessionPropertyManager = requireNonNull(sessionPropertyManager, "sessionPropertyManager is null");
         this.queryIdGenerator = requireNonNull(queryIdGenerator, "queryIdGenerator is null");
+        this.globalProperties = globalProperties;
     }
 
     @GET
@@ -108,7 +111,7 @@ public class QueryResource
 
         Session session = createSessionForRequest(servletRequest, accessControl, sessionPropertyManager, queryIdGenerator.createNextQueryId());
 
-        QueryInfo queryInfo = queryManager.createQuery(session, statement);
+        QueryInfo queryInfo = queryManager.createQuery(session, statement, globalProperties);
         URI pagesUri = uriBuilderFrom(uriInfo.getRequestUri()).appendPath(queryInfo.getQueryId().toString()).build();
         return Response.created(pagesUri).entity(queryInfo).build();
     }

@@ -14,6 +14,7 @@
 package com.facebook.presto.sql.planner;
 
 import com.facebook.presto.Session;
+import com.facebook.presto.metadata.GlobalProperties;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.NewTableLayout;
 import com.facebook.presto.metadata.QualifiedObjectName;
@@ -82,24 +83,28 @@ public class LogicalPlanner
     private final SymbolAllocator symbolAllocator = new SymbolAllocator();
     private final Metadata metadata;
     private final SqlParser sqlParser;
+    private final GlobalProperties globalProperties;
 
     public LogicalPlanner(Session session,
             List<PlanOptimizer> planOptimizers,
             PlanNodeIdAllocator idAllocator,
             Metadata metadata,
-            SqlParser sqlParser)
+            SqlParser sqlParser,
+            GlobalProperties globalProperties)
     {
         requireNonNull(session, "session is null");
         requireNonNull(planOptimizers, "planOptimizers is null");
         requireNonNull(idAllocator, "idAllocator is null");
         requireNonNull(metadata, "metadata is null");
         requireNonNull(sqlParser, "sqlParser is null");
+        requireNonNull(globalProperties, "globalProperties is null");
 
         this.session = session;
         this.planOptimizers = planOptimizers;
         this.idAllocator = idAllocator;
         this.metadata = metadata;
         this.sqlParser = sqlParser;
+        this.globalProperties = globalProperties;
     }
 
     public Plan plan(Analysis analysis)
@@ -113,7 +118,7 @@ public class LogicalPlanner
 
         if (stage.ordinal() >= Stage.OPTIMIZED.ordinal()) {
             for (PlanOptimizer optimizer : planOptimizers) {
-                root = optimizer.optimize(root, session, symbolAllocator.getTypes(), symbolAllocator, idAllocator);
+                root = optimizer.optimize(root, session, symbolAllocator.getTypes(), symbolAllocator, idAllocator, globalProperties);
                 requireNonNull(root, format("%s returned a null plan", optimizer.getClass().getName()));
             }
         }

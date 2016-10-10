@@ -15,6 +15,7 @@ package com.facebook.presto.sql.analyzer;
 
 import com.facebook.presto.Session;
 import com.facebook.presto.execution.DataDefinitionTask;
+import com.facebook.presto.metadata.GlobalProperties;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.security.AccessControl;
 import com.facebook.presto.sql.parser.SqlParser;
@@ -47,6 +48,7 @@ public class QueryExplainer
     private final SqlParser sqlParser;
     private final boolean experimentalSyntaxEnabled;
     private final Map<Class<? extends Statement>, DataDefinitionTask<?>> dataDefinitionTask;
+    private final GlobalProperties globalProperties;
 
     @Inject
     public QueryExplainer(
@@ -55,14 +57,16 @@ public class QueryExplainer
             AccessControl accessControl,
             SqlParser sqlParser,
             Map<Class<? extends Statement>, DataDefinitionTask<?>> dataDefinitionTask,
-            FeaturesConfig featuresConfig)
+            FeaturesConfig featuresConfig,
+            GlobalProperties globalProperties)
     {
         this(planOptimizers.get(),
                 metadata,
                 accessControl,
                 sqlParser,
                 dataDefinitionTask,
-                featuresConfig.isExperimentalSyntaxEnabled());
+                featuresConfig.isExperimentalSyntaxEnabled(),
+                globalProperties);
     }
 
     public QueryExplainer(
@@ -71,7 +75,8 @@ public class QueryExplainer
             AccessControl accessControl,
             SqlParser sqlParser,
             Map<Class<? extends Statement>, DataDefinitionTask<?>> dataDefinitionTask,
-            boolean experimentalSyntaxEnabled)
+            boolean experimentalSyntaxEnabled,
+            GlobalProperties globalProperties)
     {
         this.planOptimizers = requireNonNull(planOptimizers, "planOptimizers is null");
         this.metadata = requireNonNull(metadata, "metadata is null");
@@ -79,6 +84,7 @@ public class QueryExplainer
         this.sqlParser = requireNonNull(sqlParser, "sqlParser is null");
         this.experimentalSyntaxEnabled = experimentalSyntaxEnabled;
         this.dataDefinitionTask = ImmutableMap.copyOf(requireNonNull(dataDefinitionTask, "dataDefinitionTask is null"));
+        this.globalProperties = requireNonNull(globalProperties, "globalProperties is null");
     }
 
     public String getPlan(Session session, Statement statement, Type planType, List<Expression> parameters)
@@ -90,10 +96,10 @@ public class QueryExplainer
 
         switch (planType) {
             case LOGICAL:
-                Plan plan = getLogicalPlan(session, statement, parameters);
+                Plan plan = getLogicalPlan(session, statement, parameters, globalProperties);
                 return PlanPrinter.textLogicalPlan(plan.getRoot(), plan.getTypes(), metadata, session);
             case DISTRIBUTED:
-                SubPlan subPlan = getDistributedPlan(session, statement, parameters);
+                SubPlan subPlan = getDistributedPlan(session, statement, parameters, globalProperties);
                 return PlanPrinter.textDistributedPlan(subPlan, metadata, session);
         }
         throw new IllegalArgumentException("Unhandled plan type: " + planType);
@@ -114,16 +120,16 @@ public class QueryExplainer
 
         switch (planType) {
             case LOGICAL:
-                Plan plan = getLogicalPlan(session, statement, parameters);
+                Plan plan = getLogicalPlan(session, statement, parameters, globalProperties);
                 return PlanPrinter.graphvizLogicalPlan(plan.getRoot(), plan.getTypes());
             case DISTRIBUTED:
-                SubPlan subPlan = getDistributedPlan(session, statement, parameters);
+                SubPlan subPlan = getDistributedPlan(session, statement, parameters, globalProperties);
                 return PlanPrinter.graphvizDistributedPlan(subPlan);
         }
         throw new IllegalArgumentException("Unhandled plan type: " + planType);
     }
 
-    private Plan getLogicalPlan(Session session, Statement statement, List<Expression> parameters)
+    private Plan getLogicalPlan(Session session, Statement statement, List<Expression> parameters, GlobalProperties globalProperties)
     {
         // analyze statement
         Analyzer analyzer = new Analyzer(session, metadata, sqlParser, accessControl, Optional.of(this), experimentalSyntaxEnabled, parameters);
@@ -132,11 +138,11 @@ public class QueryExplainer
         PlanNodeIdAllocator idAllocator = new PlanNodeIdAllocator();
 
         // plan statement
-        LogicalPlanner logicalPlanner = new LogicalPlanner(session, planOptimizers, idAllocator, metadata, sqlParser);
+        LogicalPlanner logicalPlanner = new LogicalPlanner(session, planOptimizers, idAllocator, metadata, sqlParser, globalProperties);
         return logicalPlanner.plan(analysis);
     }
 
-    private SubPlan getDistributedPlan(Session session, Statement statement, List<Expression> parameters)
+    private SubPlan getDistributedPlan(Session session, Statement statement, List<Expression> parameters, GlobalProperties globalProperties)
     {
         // analyze statement
         Analyzer analyzer = new Analyzer(session, metadata, sqlParser, accessControl, Optional.of(this), experimentalSyntaxEnabled, parameters);
@@ -145,7 +151,7 @@ public class QueryExplainer
         PlanNodeIdAllocator idAllocator = new PlanNodeIdAllocator();
 
         // plan statement
-        LogicalPlanner logicalPlanner = new LogicalPlanner(session, planOptimizers, idAllocator, metadata, sqlParser);
+        LogicalPlanner logicalPlanner = new LogicalPlanner(session, planOptimizers, idAllocator, metadata, sqlParser, globalProperties);
         Plan plan = logicalPlanner.plan(analysis);
 
         return new PlanFragmenter().createSubPlans(session, metadata, plan);

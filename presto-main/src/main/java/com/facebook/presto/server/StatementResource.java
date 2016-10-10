@@ -32,6 +32,7 @@ import com.facebook.presto.execution.StageState;
 import com.facebook.presto.execution.TaskInfo;
 import com.facebook.presto.execution.buffer.BufferInfo;
 import com.facebook.presto.execution.buffer.OutputBufferInfo;
+import com.facebook.presto.metadata.GlobalProperties;
 import com.facebook.presto.metadata.SessionPropertyManager;
 import com.facebook.presto.operator.ExchangeClient;
 import com.facebook.presto.operator.ExchangeClientSupplier;
@@ -127,6 +128,7 @@ public class StatementResource
     private final SessionPropertyManager sessionPropertyManager;
     private final ExchangeClientSupplier exchangeClientSupplier;
     private final QueryIdGenerator queryIdGenerator;
+    private final GlobalProperties globalProperties;
 
     private final ConcurrentMap<QueryId, Query> queries = new ConcurrentHashMap<>();
     private final ScheduledExecutorService queryPurger = newSingleThreadScheduledExecutor(threadsNamed("query-purger"));
@@ -137,13 +139,14 @@ public class StatementResource
             AccessControl accessControl,
             SessionPropertyManager sessionPropertyManager,
             ExchangeClientSupplier exchangeClientSupplier,
-            QueryIdGenerator queryIdGenerator)
+            QueryIdGenerator queryIdGenerator, GlobalProperties globalProperties)
     {
         this.queryManager = requireNonNull(queryManager, "queryManager is null");
         this.accessControl = requireNonNull(accessControl, "accessControl is null");
         this.sessionPropertyManager = requireNonNull(sessionPropertyManager, "sessionPropertyManager is null");
         this.exchangeClientSupplier = requireNonNull(exchangeClientSupplier, "exchangeClientSupplier is null");
         this.queryIdGenerator = requireNonNull(queryIdGenerator, "queryIdGenerator is null");
+        this.globalProperties = globalProperties;
 
         queryPurger.scheduleWithFixedDelay(new PurgeQueriesRunnable(queries, queryManager), 200, 200, MILLISECONDS);
     }
@@ -167,7 +170,7 @@ public class StatementResource
         Session session = createSessionForRequest(servletRequest, accessControl, sessionPropertyManager, queryIdGenerator.createNextQueryId());
 
         ExchangeClient exchangeClient = exchangeClientSupplier.get(deltaMemoryInBytes -> { });
-        Query query = new Query(session, statement, queryManager, exchangeClient);
+        Query query = new Query(session, statement, queryManager, exchangeClient, globalProperties);
         queries.put(query.getQueryId(), query);
 
         return getQueryResults(query, Optional.empty(), uriInfo, new Duration(1, MILLISECONDS));
@@ -294,7 +297,8 @@ public class StatementResource
         public Query(Session session,
                 String query,
                 QueryManager queryManager,
-                ExchangeClient exchangeClient)
+                ExchangeClient exchangeClient,
+                GlobalProperties globalProperties)
         {
             requireNonNull(session, "session is null");
             requireNonNull(query, "query is null");
@@ -304,7 +308,7 @@ public class StatementResource
             this.session = session;
             this.queryManager = queryManager;
 
-            QueryInfo queryInfo = queryManager.createQuery(session, query);
+            QueryInfo queryInfo = queryManager.createQuery(session, query, globalProperties);
             queryId = queryInfo.getQueryId();
             this.exchangeClient = exchangeClient;
         }
