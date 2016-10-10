@@ -35,7 +35,7 @@ import static com.facebook.presto.sql.planner.plan.JoinNode.Type.INNER;
 import static com.facebook.presto.sql.planner.plan.JoinNode.Type.RIGHT;
 import static java.util.Objects.requireNonNull;
 
-public class EnforceRequiredJoinMethods
+public class DetermineJoinMethod
         implements PlanOptimizer
 {
     private boolean isDeleteQuery;
