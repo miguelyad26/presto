@@ -14,6 +14,7 @@
 package com.facebook.presto.execution;
 
 import com.facebook.presto.Session;
+import com.facebook.presto.metadata.GlobalProperties;
 import com.facebook.presto.spi.QueryId;
 import io.airlift.units.Duration;
 
@@ -33,7 +34,7 @@ public interface QueryManager
 
     void recordHeartbeat(QueryId queryId);
 
-    QueryInfo createQuery(Session session, String query);
+    QueryInfo createQuery(Session session, String query, GlobalProperties globalProperties);
 
     void cancelQuery(QueryId queryId);
 
