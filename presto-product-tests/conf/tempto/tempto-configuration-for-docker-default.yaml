@@ -4,3 +4,8 @@ databases:
   presto:
     host: presto-master
     configured_hdfs_user: hive
+  cassandra:
+    host: cassandra
+    port: 9042
+    default_schema: test
+    table_manager_type: cassandra
