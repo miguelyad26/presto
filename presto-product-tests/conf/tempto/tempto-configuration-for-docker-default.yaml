@@ -4,3 +4,12 @@ databases:
   presto:
     host: presto-master
     configured_hdfs_user: hive
+  cassandra:
+    host: cassandra
+    jdbc_driver_class: org.bigsql.cassandra2.jdbc.CassandraDriver
+    jdbc_url: jdbc:cassandra://${databases.cassandra.host}
+    #jdbc_user: test_presto_user
+    #jdbc_password: test_presto_password
+    jdbc_pooling: false
+    table_manager_type: jdbc
+    skip_create_schema: true

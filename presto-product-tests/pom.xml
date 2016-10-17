@@ -40,6 +40,14 @@
         </dependency>
         <dependency>
             <groupId>com.teradata.tempto</groupId>
+            <artifactId>tempto-cassandra</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.teradata.tempto</groupId>
+            <artifactId>tempto-tpch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.teradata.tempto</groupId>
             <artifactId>tempto-runner</artifactId>
         </dependency>
         <dependency>
@@ -101,6 +109,16 @@
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
         </dependency>
+<dependency>
+    <groupId>com.dbschema.cassandra</groupId>
+    <artifactId>jdbc</artifactId>
+    <version>1.0</version>
+</dependency>
+<dependency>
+    <groupId>com.datastax.cassandra</groupId>
+    <artifactId>cassandra-driver-core</artifactId>
+    <version>3.0.0</version>
+</dependency>
     </dependencies>
 
     <build>
