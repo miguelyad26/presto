@@ -481,7 +481,7 @@ public class UnaliasSymbolReferences
                     node.getFilter().map(this::canonicalize),
                     canonicalize(node.getLeftHashSymbol()),
                     canonicalize(node.getRightHashSymbol()),
-                    node.getMethod());
+                    node.getDistributionType());
         }
 
         @Override

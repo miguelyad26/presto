@@ -409,7 +409,7 @@ public class PredicatePushDown
                         newJoinFilter,
                         node.getLeftHashSymbol(),
                         node.getRightHashSymbol(),
-                        node.getMethod());
+                        node.getDistributionType());
             }
             if (!postJoinPredicate.equals(BooleanLiteral.TRUE_LITERAL)) {
                 output = new FilterNode(idAllocator.getNextId(), output, postJoinPredicate);
@@ -714,7 +714,7 @@ public class PredicatePushDown
                             node.getFilter(),
                             node.getLeftHashSymbol(),
                             node.getRightHashSymbol(),
-                            node.getMethod());
+                            node.getDistributionType());
                 }
                 else {
                     return new JoinNode(
@@ -726,7 +726,7 @@ public class PredicatePushDown
                             node.getFilter(),
                             node.getLeftHashSymbol(),
                             node.getRightHashSymbol(),
-                            node.getMethod());
+                            node.getDistributionType());
                 }
             }
 
@@ -743,7 +743,7 @@ public class PredicatePushDown
                     node.getFilter(),
                     node.getLeftHashSymbol(),
                     node.getRightHashSymbol(),
-                    node.getMethod());
+                    node.getDistributionType());
         }
 
         private boolean canConvertOuterToInner(List<Symbol> innerSymbolsForOuterJoin, Expression inheritedPredicate)
