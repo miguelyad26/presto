@@ -333,7 +333,7 @@ public class HashAggregationOperator
         if (finishing || outputIterator != null) {
             return false;
         }
-        else if (aggregationBuilder != null && (aggregationBuilder.isFull() || aggregationBuilder.isBusy())) {
+        else if (aggregationBuilder != null && aggregationBuilder.isFull()) {
             return false;
         }
         else {
@@ -425,11 +425,6 @@ public class HashAggregationOperator
 
             // only flush if we are finishing or the aggregation builder is full
             if (!finishing && (aggregationBuilder == null || !aggregationBuilder.isFull())) {
-                return null;
-            }
-
-            // don't ask for output if builder is busy
-            if (aggregationBuilder.isBusy()) {
                 return null;
             }
 

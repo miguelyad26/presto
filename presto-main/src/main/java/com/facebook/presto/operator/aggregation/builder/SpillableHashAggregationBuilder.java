@@ -106,12 +106,6 @@ public class SpillableHashAggregationBuilder
         return false;
     }
 
-    @Override
-    public boolean isBusy()
-    {
-        return !hasPreviousSpillCompletedSuccessfully();
-    }
-
     private boolean hasPreviousSpillCompletedSuccessfully()
     {
         if (spillInProgress.isDone()) {

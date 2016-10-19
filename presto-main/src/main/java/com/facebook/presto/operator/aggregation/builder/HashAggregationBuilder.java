@@ -27,8 +27,6 @@ public interface HashAggregationBuilder
 
     boolean isFull();
 
-    boolean isBusy();
-
     void updateMemory();
 
     @Override

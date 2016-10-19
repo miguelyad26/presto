@@ -137,12 +137,6 @@ public class InMemoryHashAggregationBuilder
     }
 
     @Override
-    public boolean isBusy()
-    {
-        return false;
-    }
-
-    @Override
     public CompletableFuture<?> startMemoryRevoke()
     {
         return null;
