@@ -44,7 +44,7 @@ public class TestLocalBinarySpilledQueries
                         SystemSessionProperties.OPERATOR_MEMORY_LIMIT_BEFORE_SPILL, "1B")) //spill constantly
                 .build();
 
-        LocalQueryRunner localQueryRunner = new LocalQueryRunner(defaultSession);
+        LocalQueryRunner localQueryRunner = new LocalQueryRunner(defaultSession, true); //revoke memory constantly
 
         // add the tpch catalog
         // local queries run directly against the generator
