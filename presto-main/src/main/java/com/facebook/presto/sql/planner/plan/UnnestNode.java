@@ -37,6 +37,7 @@ public class UnnestNode
     private final List<Symbol> replicateSymbols;
     private final Map<Symbol, List<Symbol>> unnestSymbols;
     private final Optional<Symbol> ordinalitySymbol;
+    private final boolean unnestTable;
 
     @JsonCreator
     public UnnestNode(
@@ -44,7 +45,8 @@ public class UnnestNode
             @JsonProperty("source") PlanNode source,
             @JsonProperty("replicateSymbols") List<Symbol> replicateSymbols,
             @JsonProperty("unnestSymbols") Map<Symbol, List<Symbol>> unnestSymbols,
-            @JsonProperty("ordinalitySymbol") Optional<Symbol> ordinalitySymbol)
+            @JsonProperty("ordinalitySymbol") Optional<Symbol> ordinalitySymbol,
+            @JsonProperty("unnestTable") boolean unnestTable)
     {
         super(id);
         this.source = requireNonNull(source, "source is null");
@@ -58,6 +60,7 @@ public class UnnestNode
         }
         this.unnestSymbols = builder.build();
         this.ordinalitySymbol = requireNonNull(ordinalitySymbol, "ordinalitySymbol is null");
+        this.unnestTable = unnestTable;
     }
 
     @Override
@@ -92,6 +95,12 @@ public class UnnestNode
     public Optional<Symbol> getOrdinalitySymbol()
     {
         return ordinalitySymbol;
+    }
+
+    @JsonProperty
+    public boolean isUnnestTable()
+    {
+        return unnestTable;
     }
 
     @Override

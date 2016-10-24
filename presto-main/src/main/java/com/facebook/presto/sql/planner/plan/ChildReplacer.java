@@ -103,7 +103,7 @@ public class ChildReplacer
     @Override
     public PlanNode visitUnnest(UnnestNode node, List<PlanNode> newChildren)
     {
-        return new UnnestNode(node.getId(), Iterables.getOnlyElement(newChildren), node.getReplicateSymbols(), node.getUnnestSymbols(), node.getOrdinalitySymbol());
+        return new UnnestNode(node.getId(), Iterables.getOnlyElement(newChildren), node.getReplicateSymbols(), node.getUnnestSymbols(), node.getOrdinalitySymbol(), node.isUnnestTable());
     }
 
     @Override
