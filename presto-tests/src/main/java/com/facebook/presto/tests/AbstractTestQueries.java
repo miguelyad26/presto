@@ -520,6 +520,13 @@ public abstract class AbstractTestQueries
     }
 
     @Test
+    public void testUnnestTable()
+            throws Exception
+    {
+        assertQueryFails("SELECT 1 FROM TABLE(ARRAY[1])", ".*: TABLE expression is not supported");
+    }
+
+    @Test
     public void testArrays()
             throws Exception
     {

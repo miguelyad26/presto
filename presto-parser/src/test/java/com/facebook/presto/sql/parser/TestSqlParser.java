@@ -1401,13 +1401,17 @@ public class TestSqlParser
     public void testUnnest()
             throws Exception
     {
+        assertStatement("SELECT * FROM UNNEST(a)",
+                simpleQuery(
+                        selectList(new AllColumns()),
+                        new Unnest(ImmutableList.of(new QualifiedNameReference(QualifiedName.of("a"))), false, false)));
         assertStatement("SELECT * FROM t CROSS JOIN UNNEST(a)",
                 simpleQuery(
                         selectList(new AllColumns()),
                         new Join(
                                 Join.Type.CROSS,
                                 new Table(QualifiedName.of("t")),
-                                new Unnest(ImmutableList.of(new QualifiedNameReference(QualifiedName.of("a"))), false),
+                                new Unnest(ImmutableList.of(new QualifiedNameReference(QualifiedName.of("a"))), false, false),
                                 Optional.empty())));
         assertStatement("SELECT * FROM t CROSS JOIN UNNEST(a) WITH ORDINALITY",
                 simpleQuery(
@@ -1415,7 +1419,33 @@ public class TestSqlParser
                         new Join(
                                 Join.Type.CROSS,
                                 new Table(QualifiedName.of("t")),
-                                new Unnest(ImmutableList.of(new QualifiedNameReference(QualifiedName.of("a"))), true),
+                                new Unnest(ImmutableList.of(new QualifiedNameReference(QualifiedName.of("a"))), true, false),
+                                Optional.empty())));
+    }
+
+    @Test
+    public void testTable()
+            throws Exception
+    {
+        assertStatement("SELECT * FROM TABLE(a)",
+                simpleQuery(
+                        selectList(new AllColumns()),
+                        new Unnest(ImmutableList.of(new QualifiedNameReference(QualifiedName.of("a"))), false, true)));
+        assertStatement("SELECT * FROM t CROSS JOIN TABLE(a)",
+                simpleQuery(
+                        selectList(new AllColumns()),
+                        new Join(
+                                Join.Type.CROSS,
+                                new Table(QualifiedName.of("t")),
+                                new Unnest(ImmutableList.of(new QualifiedNameReference(QualifiedName.of("a"))), false, true),
+                                Optional.empty())));
+        assertStatement("SELECT * FROM t CROSS JOIN TABLE(a) WITH ORDINALITY",
+                simpleQuery(
+                        selectList(new AllColumns()),
+                        new Join(
+                                Join.Type.CROSS,
+                                new Table(QualifiedName.of("t")),
+                                new Unnest(ImmutableList.of(new QualifiedNameReference(QualifiedName.of("a"))), true, true),
                                 Optional.empty())));
     }
 
