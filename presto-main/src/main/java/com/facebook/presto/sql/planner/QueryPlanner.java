@@ -283,10 +283,10 @@ class QueryPlanner
 
         ImmutableMap.Builder<Symbol, Expression> projections = ImmutableMap.builder();
         for (Expression expression : expressions) {
-            if (expression instanceof GroupingOperation && node instanceof QuerySpecification) {
-                expression = rewriteGroupingOperation(subPlan, node, expression);
-            }
             Expression rewritten = ExpressionTreeRewriter.rewriteWith(new ParameterRewriter(analysis.getParameters(), analysis), expression);
+            if (node instanceof QuerySpecification) {
+                rewritten = ExpressionTreeRewriter.rewriteWith(new GroupingOperationRewriter(subPlan, (QuerySpecification) node, analysis, metadata, rewritten instanceof GroupingOperation), rewritten);
+            }
             Symbol symbol = symbolAllocator.newSymbol(rewritten, analysis.getTypeWithCoercions(expression));
             projections.put(symbol, subPlan.rewrite(rewritten));
             outputTranslations.addIntermediateMapping(expression, rewritten);
