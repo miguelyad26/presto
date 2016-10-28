@@ -14,6 +14,10 @@ fi
 
 shift 1
 
+mkdir /var/presto/
+touch /var/presto/server.log
+tail -f /var/presto/server.log &
+
 /docker/volumes/presto-server/bin/launcher \
   -Dnode.id=${HOSTNAME} \
   -Dcatalog.config-dir=${PRESTO_CONFIG_DIRECTORY}/catalog \
