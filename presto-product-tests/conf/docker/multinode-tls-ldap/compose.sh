@@ -8,7 +8,9 @@ TEMPTO_CONFIG_YAML_DEFAULT="${PRODUCT_TESTS_ROOT}/conf/tempto/tempto-configurati
 export TEMPTO_CONFIG_YAML=$(canonical_path ${TEMPTO_CONFIG_YAML:-${TEMPTO_CONFIG_YAML_DEFAULT}})
 
 docker-compose \
--f ${SCRIPT_DIRECTORY}/../common/standard.yml \
+-f ${BASH_SOURCE%/*}/../common/base.yml \
+-f ${BASH_SOURCE%/*}/../common/hive.yml \
+-f ${BASH_SOURCE%/*}/../common/presto.yml \
 -f ${SCRIPT_DIRECTORY}/../common/jdbc_db.yml \
 -f ${SCRIPT_DIRECTORY}/docker-compose.yml \
 "$@"
