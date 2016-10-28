@@ -589,6 +589,29 @@ class QueryPlanner
             return subPlan;
         }
 
+        // Rewrite any GROUPING() expressions in the window function
+        ImmutableList.Builder<FunctionCall> rewrittenWindowFunctionsBuilder = ImmutableList.builder();
+        for (FunctionCall windowFunction : windowFunctions) {
+            Window window = windowFunction.getWindow().get();
+
+            window = rewriteGroupingOperationsInWindowNode(window, subPlan, node);
+            FunctionCall updatedWindowFunction = new FunctionCall(windowFunction.getName(), Optional.of(window), windowFunction.isDistinct(), windowFunction.getArguments());
+
+            // The the type and signature maps in Analysis because we created a new FunctionCall object
+            Type functionType = analysis.getType(windowFunction);
+            IdentityHashMap<Expression, Type> updatedType = new IdentityHashMap<>();
+            updatedType.put(updatedWindowFunction, functionType);
+            analysis.addTypes(updatedType);
+
+            Signature signature = analysis.getFunctionSignature(windowFunction);
+            IdentityHashMap<FunctionCall, Signature> updatedSignature = new IdentityHashMap<>();
+            updatedSignature.put(updatedWindowFunction, signature);
+            analysis.addFunctionSignatures(updatedSignature);
+
+            rewrittenWindowFunctionsBuilder.add(updatedWindowFunction);
+        }
+        windowFunctions = rewrittenWindowFunctionsBuilder.build();
+
         for (FunctionCall windowFunction : windowFunctions) {
             Window window = windowFunction.getWindow().get();
 
@@ -613,19 +636,20 @@ class QueryPlanner
             }
 
             // Pre-project inputs
-            ImmutableList.Builder<Expression> inputs = ImmutableList.<Expression>builder()
+            ImmutableList.Builder<Expression> inputsBuilder = ImmutableList.<Expression>builder()
                     .addAll(windowFunction.getArguments())
                     .addAll(window.getPartitionBy())
                     .addAll(Iterables.transform(window.getOrderBy(), SortItem::getSortKey));
 
             if (frameStart != null) {
-                inputs.add(frameStart);
+                inputsBuilder.add(frameStart);
             }
             if (frameEnd != null) {
-                inputs.add(frameEnd);
+                inputsBuilder.add(frameEnd);
             }
+            ImmutableList<Expression> inputs = inputsBuilder.build();
 
-            subPlan = subPlan.appendProjections(inputs.build(), symbolAllocator, idAllocator);
+            subPlan = subPlan.appendProjections(inputs, symbolAllocator, idAllocator);
 
             // Rewrite PARTITION BY in terms of pre-projected inputs
             ImmutableList.Builder<Symbol> partitionBySymbols = ImmutableList.builder();
@@ -707,6 +731,36 @@ class QueryPlanner
         }
 
         return subPlan;
+    }
+
+    private Window rewriteGroupingOperationsInWindowNode(Window window, PlanBuilder subPlan, QuerySpecification node)
+    {
+        ImmutableList.Builder<Expression> rewrittenPartitionByBuilder = ImmutableList.builder();
+        for (Expression expression : window.getPartitionBy()) {
+            Expression rewritten = ExpressionTreeRewriter.rewriteWith(new GroupingOperationRewriter(subPlan, node, analysis, metadata, expression instanceof GroupingOperation), expression);
+
+            Type expressionType = analysis.getType(expression);
+            IdentityHashMap<Expression, Type> newTypes = new IdentityHashMap<>();
+            newTypes.put(rewritten, expressionType);
+            analysis.addTypes(newTypes);
+
+            rewrittenPartitionByBuilder.add(rewritten);
+        }
+
+        ImmutableList.Builder<SortItem> rewrittenSortItemsBuilder = ImmutableList.builder();
+        for (SortItem sortItem : window.getOrderBy()) {
+            Expression sortKey = sortItem.getSortKey();
+            Expression rewrittenSortKey = ExpressionTreeRewriter.rewriteWith(new GroupingOperationRewriter(subPlan, node, analysis, metadata, sortKey instanceof GroupingOperation), sortKey);
+            SortItem rewrittenSortItem = new SortItem(rewrittenSortKey, sortItem.getOrdering(), sortItem.getNullOrdering());
+            rewrittenSortItemsBuilder.add(rewrittenSortItem);
+
+            Type sortKeyType = analysis.getType(sortKey);
+            IdentityHashMap<Expression, Type> newTypes = new IdentityHashMap<>();
+            newTypes.put(rewrittenSortKey, sortKeyType);
+            analysis.addTypes(newTypes);
+        }
+
+        return new Window(rewrittenPartitionByBuilder.build(), rewrittenSortItemsBuilder.build(), window.getFrame());
     }
 
     private PlanBuilder handleSubqueries(PlanBuilder subPlan, Node node, Iterable<Expression> inputs)

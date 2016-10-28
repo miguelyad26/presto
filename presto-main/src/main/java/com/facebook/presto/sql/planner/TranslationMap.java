@@ -29,6 +29,7 @@ import com.facebook.presto.sql.tree.LongLiteral;
 import com.facebook.presto.sql.tree.QualifiedName;
 import com.facebook.presto.sql.tree.QualifiedNameReference;
 import com.facebook.presto.sql.tree.QuerySpecification;
+import com.facebook.presto.sql.tree.SymbolReference;
 import com.facebook.presto.type.ListLiteralType;
 import com.google.common.collect.ImmutableList;
 
@@ -306,7 +307,7 @@ class TranslationMap
         groupingSetOrdinals = groupingSetOrdinalsBuilder.build();
 
         List<Expression> arguments = Arrays.asList(
-                new LongLiteral("0"),
+                new SymbolReference("groupid"),
                 new Cast(new ArrayConstructor(groupingOrdinals), ListLiteralType.NAME),
                 new Cast(new ArrayConstructor(groupingSetOrdinals.stream().map(ArrayConstructor::new).collect(Collectors.toList())), ListLiteralType.NAME)
         );
