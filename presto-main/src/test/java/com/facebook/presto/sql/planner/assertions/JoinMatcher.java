@@ -29,11 +29,18 @@ final class JoinMatcher
 {
     private final JoinNode.Type joinType;
     private final List<AliasPair> equiCriteria;
+    private final JoinNode.DistributionType distributionType;
 
     JoinMatcher(JoinNode.Type joinType, List<AliasPair> equiCriteria)
     {
+        this(joinType, equiCriteria, null);
+    }
+
+    JoinMatcher(JoinNode.Type joinType, List<AliasPair> equiCriteria, JoinNode.DistributionType distributionType)
+    {
         this.joinType = requireNonNull(joinType, "joinType is null");
         this.equiCriteria = requireNonNull(equiCriteria, "equiCriteria is null");
+        this.distributionType = distributionType;
     }
 
     @Override
@@ -43,6 +50,11 @@ final class JoinMatcher
             JoinNode joinNode = (JoinNode) node;
             if (joinNode.getType() != joinType) {
                 return false;
+            }
+            if (distributionType != null) {
+                if (!joinNode.getDistributionType().isPresent() || joinNode.getDistributionType().get() != distributionType) {
+                    return false;
+                }
             }
             if (joinNode.getCriteria().size() == equiCriteria.size()) {
                 int i = 0;

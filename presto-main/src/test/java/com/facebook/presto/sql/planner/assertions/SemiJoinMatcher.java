@@ -27,12 +27,19 @@ final class SemiJoinMatcher
     private final String sourceSymbolAlias;
     private final String filteringSymbolAlias;
     private final String outputAlias;
+    private final SemiJoinNode.DistributionType distributionType;
 
     SemiJoinMatcher(String sourceSymbolAlias, String filteringSymbolAlias, String outputAlias)
+    {
+        this(sourceSymbolAlias, filteringSymbolAlias, outputAlias, null);
+    }
+
+    SemiJoinMatcher(String sourceSymbolAlias, String filteringSymbolAlias, String outputAlias, SemiJoinNode.DistributionType distributionType)
     {
         this.sourceSymbolAlias = requireNonNull(sourceSymbolAlias, "sourceSymbolAlias is null");
         this.filteringSymbolAlias = requireNonNull(filteringSymbolAlias, "filteringSymbolAlias is null");
         this.outputAlias = requireNonNull(outputAlias, "outputAlias is null");
+        this.distributionType = distributionType;
     }
 
     @Override
@@ -40,6 +47,9 @@ final class SemiJoinMatcher
     {
         if (node instanceof SemiJoinNode) {
             SemiJoinNode semiJoinNode = (SemiJoinNode) node;
+            if (distributionType != null && (!semiJoinNode.getDistributionType().isPresent() || semiJoinNode.getDistributionType().get() != distributionType)) {
+                return false;
+            }
             expressionAliases.put(sourceSymbolAlias, semiJoinNode.getSourceJoinSymbol().toSymbolReference());
             expressionAliases.put(filteringSymbolAlias, semiJoinNode.getFilteringSourceJoinSymbol().toSymbolReference());
             expressionAliases.put(outputAlias, semiJoinNode.getSemiJoinOutput().toSymbolReference());
