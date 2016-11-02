@@ -51,6 +51,7 @@
         <dep.slice.version>0.27</dep.slice.version>
         <dep.aws-sdk.version>1.11.30</dep.aws-sdk.version>
         <dep.tempto.version>1.17</dep.tempto.version>
+        <dep.cassandra.datastax.version>3.0.0</dep.cassandra.datastax.version>
 
         <!--
         Versions newer than 6.9 appear to have an issue where the @BeforeClass method in
@@ -815,6 +816,12 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>${dep.cassandra.datastax.version}</version>
+        </dependency>
 
         </dependencies>
     </dependencyManagement>

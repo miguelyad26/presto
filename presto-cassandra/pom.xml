@@ -14,14 +14,13 @@
     <properties>
         <air.main.basedir>${project.parent.basedir}</air.main.basedir>
         <cassandra.version>2.1.6</cassandra.version>
-        <datastax.version>3.0.0</datastax.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
-            <version>${datastax.version}</version>
+            <version>${dep.cassandra.datastax.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.netty</groupId>
@@ -276,7 +275,7 @@
         <dependency>
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-mapping</artifactId>
-            <version>${datastax.version}</version>
+            <version>${dep.cassandra.datastax.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
