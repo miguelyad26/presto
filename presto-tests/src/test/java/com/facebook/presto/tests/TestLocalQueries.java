@@ -17,12 +17,15 @@ import com.facebook.presto.Session;
 import com.facebook.presto.connector.ConnectorId;
 import com.facebook.presto.metadata.SessionPropertyManager;
 import com.facebook.presto.testing.LocalQueryRunner;
+import com.facebook.presto.testing.MaterializedResult;
 import com.facebook.presto.tpch.TpchConnectorFactory;
 import com.google.common.collect.ImmutableMap;
+import org.testng.annotations.Test;
 
 import static com.facebook.presto.testing.TestingSession.TESTING_CATALOG;
 import static com.facebook.presto.testing.TestingSession.testSessionBuilder;
 import static com.facebook.presto.tpch.TpchMetadata.TINY_SCHEMA_NAME;
+import static org.testng.Assert.assertEquals;
 
 public class TestLocalQueries
         extends AbstractTestQueries
@@ -55,5 +58,74 @@ public class TestLocalQueries
         sessionPropertyManager.addConnectorSessionProperties(new ConnectorId(TESTING_CATALOG), TEST_CATALOG_PROPERTIES);
 
         return localQueryRunner;
+    }
+
+    @Test
+    public void testExplainPlanGivesConsistentOutputInSubsequentRuns()
+    {
+
+        //q9
+        String sql = "SELECT\n" +
+                "  nation,\n" +
+                "  o_year,\n" +
+                "  sum(amount) AS sum_profit\n" +
+                "FROM (\n" +
+                "       SELECT\n" +
+                "         n.name                                                          AS nation,\n" +
+                "         extract(YEAR FROM o.orderdate)                                  AS o_year,\n" +
+                "         l.extendedprice * (1 - l.discount) - ps.supplycost * l.quantity AS amount\n" +
+                "       FROM\n" +
+                "         part p,\n" +
+                "         supplier s,\n" +
+                "         lineitem l,\n" +
+                "         partsupp ps,\n" +
+                "         orders o,\n" +
+                "         nation n\n" +
+                "       WHERE\n" +
+                "         s.suppkey = l.suppkey\n" +
+                "         AND ps.suppkey = l.suppkey\n" +
+                "         AND ps.partkey = l.partkey\n" +
+                "         AND p.partkey = l.partkey\n" +
+                "         AND o.orderkey = l.orderkey\n" +
+                "         AND s.nationkey = n.nationkey\n" +
+                "         AND p.name LIKE '%green%'\n" +
+                "     ) AS profit\n" +
+                "GROUP BY\n" +
+                "  nation,\n" +
+                "  o_year\n" +
+                "ORDER BY\n" +
+                "  nation,\n" +
+                "  o_year DESC";
+//        String sql = "EXPLAIN SELECT\n  nation,\n  o_year,\n  sum(amount) AS sum_profit\nFROM (\n       SELECT\n         n.name                                                          AS nation,\n         extract(YEAR FROM o.orderdate)                                  AS o_year,\n         l.extendedprice * (1 - l.discount) - ps.supplycost * l.quantity AS amount\n       FROM\n         part p,\n         supplier s,\n         lineitem l,\n         partsupp ps,\n         orders o,\n         nation n\n       WHERE\n         s.suppkey = l.suppkey\n         AND ps.suppkey = l.suppkey\n         AND ps.partkey = l.partkey\n         AND p.partkey = l.partkey\n         AND o.orderkey = l.orderkey\n         AND s.nationkey = n.nationkey\n         AND p.name LIKE '%green%'\n     ) AS profit\nGROUP BY\n  nation,\n  o_year\nORDER BY\n  nation,\n  o_year DESC";
+
+        //q6
+//        String sql = "SELECT sum(l.extendedprice * l.discount) AS revenue\nFROM\n  lineitem l\nWHERE\n  l.shipdate >= DATE '1994-01-01'\n  AND l.shipdate < DATE '1994-01-01' + INTERVAL '1' YEAR\nAND l.discount BETWEEN 0.06 - 0.01 AND 0.06 + 0.01\nAND l.quantity < 24\n";
+
+//        computeActual("EXPLAIN " + sql); //warmup
+        MaterializedResult result = computeActual("EXPLAIN " + sql);
+
+        System.out.println("================================================");
+
+        MaterializedResult result2 = computeActual("EXPLAIN " + sql);
+
+//        assertEquals(moduloSymbolNumbers(result2), moduloSymbolNumbers(result));
+
+        int i = 0;
+        while (i < 10) {
+            i++;
+            System.out.println(result2.toString());
+
+            assertEquals(moduloSymbolNumbers(result2), moduloSymbolNumbers(result), "Explain differs after " + i + " attempts");
+            result = result2;
+            System.out.println("================================================");
+            result2 = computeActual("EXPLAIN " + sql);
+        }
+    }
+
+
+    private String moduloSymbolNumbers(MaterializedResult result2) {
+//        return result2.toString().replaceAll("_\\d+", "");
+        return result2.toString().replaceAll("hashvalue_\\d+", "hashvalue_");
+//        return result2.toString();
     }
 }
